@@ -28,7 +28,6 @@ user: "Krylov Sergey"
 user_email: "https://vk.com/kssergey2"
 google_tracking_id: "UA-96359860-1"
 google_site_verification: "UA-96359860-1"
-disqus_shortname: "olimp"
 
 # Build settings
 markdown: kramdown
