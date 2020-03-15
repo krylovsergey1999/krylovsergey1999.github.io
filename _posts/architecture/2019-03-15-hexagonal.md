@@ -5,9 +5,9 @@ date:   2019-03-14 12:00:00 +0800
 categories: Architecture
 tags: architecture hexagonal
 ---
-#Гексагональная Архитектура
+# Гексагональная Архитектура
 
-![Alt tex][arch-gex]
+![arch-gex](/assets/images/arch-gex.jpeg)
 
 Бизнес логика - в центре в ядре
 
@@ -19,8 +19,3 @@ tags: architecture hexagonal
 - ***Приложение (Application)*** - слой действует как связующее звено между слоями домена и инфраструктуры
 - ***Инфраструктура (Framework)*** - реализация взаимодействия домена с внешним миром, внутренние слои выглядят для него как черный ящик
    
-
-
-
-
-![arch-gex](/assets/images/arch-gex.jpeg)
