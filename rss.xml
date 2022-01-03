@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+    <channel>
+        <title></title>
+        <link>undefined</link>
+        <description>undefined</description>
+        <lastBuildDate>Mon, 03 Jan 2022 14:17:45 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>Joplin Pages Publisher</generator>
+        <item>
+            <title><![CDATA[JDBC | Оглавление]]></title>
+            <guid>4c429877ed3e4be2ad4029912dc450b8</guid>
+            <pubDate>Mon, 21 Sep 2020 02:23:35 GMT</pubDate>
+            <content:encoded><![CDATA[<h1 id="jdbc">JDBC</h1>
+<table>
+<thead>
+<tr>
+<th><a href="/article/java-or-oglavlenie">Java</a></th>
+<th><a href="/article/bd-or-oglavlenie">BD</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><a href="/article/jdbc-or-oglavlenie">JDBC</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="оглавление">Оглавление</h2>
+<ol>
+<li><strong>ACID</strong></li>
+<li><strong>Транзакции в СУБД</strong>
+<ul>
+<li><em>Уровень изоляций транзакций</em></li>
+</ul>
+</li>
+<li><strong>In-memory база данных H2</strong></li>
+<li><strong>JDBC, роль JDBC в стеке технологий</strong></li>
+<li><strong>ORM Pattern "Executor"</strong></li>
+</ol>
+<hr />
+<h2 id="acid">ACID</h2>
+<blockquote>
+<p><em>Набор свойств транзакции базы данных, которые гарантируют целостность данных, даже в случае технических сбоев.</em></p>
+</blockquote>
+<ul>
+<li><strong>Atomicity</strong> - <em>атомарность (либо целиком, либо не выполнется)</em></li>
+<li><strong>Consistency</strong> - <em>консистентность (типо состояние не ломается)</em></li>
+<li><strong>Isolation</strong> - <em>изоляция (изменения в разных транзакциях не видны)</em></li>
+<li><strong>Durability</strong> - <em>долговечность (если транзакция закончена, то данные сохранены)</em></li>
+</ul>
+<p><img src="/_resources/8376c2780c2943adb7de1ae73469fc9d.png" /></p>
+<hr />
+<h2 id="транзакции-в-субд">Транзакции в СУБД</h2>
+<p><strong>Транзакция</strong> - <em>группа последовательных операций, которая представляет собой логическую еденицу работы с данными.</em></p>
+<blockquote>
+<p>Часто в БД “транзакции” это не транзакции, с точки зрения ACID.</p>
+</blockquote>
+<p><img src="/_resources/b884958dc9c6442f9649a42e80694361.png" /></p>
+<p>======================</p>
+<h3 id="уровень-изоляций-транзакций">Уровень изоляций транзакций</h3>
+<p><strong>Уровень изолированности транзакций</strong> - <em>условное значение определяющее, в какой мере в результате выполнения параллельных транзакций в СУБД допускается получение несогласоованных данных.</em></p>
+<blockquote>
+<p>Если все делать по ACID, то БД будет очень медленной</p>
+</blockquote>
+<p><img src="/_resources/8f6688686b4a4cb9830377e0c65ce9a1.png" /></p>
+<p><em>Уровни изоляции транзакций можно рассматривать как механизм, позволяющий решать проблему параллельного доступа к данным и изменения данных без явных ручных блокировок.</em></p>
+<ul>
+<li><strong>Serializable</strong> (хорошая, но никто не будет так делать) — <em>транзакции полностью изолируются друг от друга и ни одна транзакция ни коим образом не влияет на другие. Самая низкая степень параллельности транзакций.</em></li>
+<li><strong>Repeatable read</strong> (фантомное чтение) — <em>изменения данных, которые были прочитаны в транзакции ранее в транзакцию не попадают, другие транзакции не могут изменять данные, прочитанные этой транзакцией. Возможен эффект фантомного чтения, степерь параллельности транзакций выше, чем у Serializable.</em></li>
+<li><strong>Read commited</strong> (фантомное чтение + неповторяющееся чтение) — <em>транзакции получают изменения в данных от других транзакций, которые были успешно подтверждены. Возможны эффекты фантомного чтения и неповторяемого чтения. Этот уровень изоляции обычно используется по умолчанию в базах данных и обеспечивает хорошую степень параллельности транзакций.</em></li>
+<li><strong>Read uncommited</strong> (грязное + неповторяющееся + фантомное)— <em>самый низший уровень изоляции транзакций, который гарантирует только, что изменения, внёсённые одной транзакцией, не будут перезаписаные другой транзакцией. Подвержден всем эффектам влияния транзакций друг на друга. Обеспечивает наивысшую степерь параллельности транзакций.</em></li>
+</ul>
+<blockquote>
+<p>В Oracle есть Serializable, Read Commited(по умолчанию), Read Only</p>
+</blockquote>
+<p>Плохие эффекты:
+Грязное чтение — чтение данных, добавленных или изменённых транзакцией, которая впоследствии не подтвердится (откатится)
+Неповторяющееся чтение — при повторном чтении в рамках одной транзакции ранее прочитанные данные оказываются изменёнными
+Пример: читаем строку, например сколько денег у клиента пытаемся снять деньги, а потом оказывается что денег нет
+Фантомное чтение— одна транзакция в ходе своего выполнения несколько раз выбирает множество строк по одним и тем же критериям. Другая транзакция в интервалах между этими выборками добавляет или удаляет строки или изменяет столбцы некоторых строк, используемых в критериях выборки первой транзакции, и успешно заканчивается. В результате получится, что одни и те же выборки в первой транзакции дают разные множества строк.
+Пример: агрегационные данные, например считаем кол-во отрицательных счетов, а потом оказывается их больше</p>
+]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[BD | Оглавление]]></title>
+            <guid>563e21a3191c4525aa5aa7c4564e0544</guid>
+            <pubDate>Mon, 21 Sep 2020 02:22:34 GMT</pubDate>
+            <content:encoded><![CDATA[<h1 id="bd">BD</h1>
+<table>
+<thead>
+<tr>
+<th><a href="/article/java-or-oglavlenie">Java</a></th>
+<th><a href="/article/bd-or-oglavlenie">BD</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><a href="/article/jdbc-or-oglavlenie">JDBC</a></td>
+</tr>
+</tbody>
+</table>
+]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[Java | Оглавление]]></title>
+            <guid>d3627f51f9d54c3c8b712fe14f258f59</guid>
+            <pubDate>Thu, 02 Jul 2020 15:57:45 GMT</pubDate>
+            <content:encoded><![CDATA[<h3 id="road-map"><a href="/article/road-map-or-java">Road Map</a></h3>
+<h3 id="tasks">Tasks</h3>
+<h4 id="tasks-2"><a>Tasks</a></h4>
+<hr />
+<h3 id="работа-с-окружением">Работа с окружением</h3>
+<h4 id="работа-с-окружением-2"><a>Работа с окружением</a></h4>
+<ol>
+<li><a>Сериализация</a></li>
+</ol>
+<h3 id="алгоритмы-на-java"><a>Алгоритмы на Java</a></h3>
+<table>
+<thead>
+<tr>
+<th><a>Basics</a></th>
+<th><a>Tools</a></th>
+<th><a>JDK API</a></th>
+<th><a>Frameworks</a></th>
+<th><a>Testing</a></th>
+<th><a>Utility Libraries</a></th>
+<th><a href="/article/bd-or-oglavlenie">BD</a></th>
+<th><a>Web</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a>Version Control</a></td>
+<td><a>IDEA</a></td>
+<td><a>Java Collections Framework</a></td>
+<td><a>Spring Framework</a></td>
+<td><a>JUnit</a></td>
+<td></td>
+<td><a href="/article/jdbc-or-oglavlenie">JDBC</a></td>
+<td><a>Sonar</a></td>
+</tr>
+<tr>
+<td><a>Linux</a></td>
+<td><a>Gradle</a></td>
+<td><a>Многопоточность</a></td>
+<td><a>Hibernate</a></td>
+<td><a>Mockito</a></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a>Data Structures - Algorithms</a></td>
+<td><a>Maven</a></td>
+<td><a>Java IO / NIO / LOG</a></td>
+<td><a>Micronaut</a></td>
+<td><a>TestContainers</a></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a>HTTP / HTTPS</a></td>
+<td><a>CI / CD</a></td>
+<td><a>Java 8</a></td>
+<td><a>Quarkus</a></td>
+<td><a>Spring Boot Test</a></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a>Основы</a></td>
+<td><a>Docker и Kubernetes</a></td>
+<td><a>Java 11</a></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a>Шаблоны проектирования</a></td>
+<td></td>
+<td><a>Java 14</a></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><a>Java 15</a></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[Road Map | Java]]></title>
+            <guid>534c4413aec945be91dc97ee53c6cacd</guid>
+            <pubDate>Fri, 05 Jun 2020 06:40:32 GMT</pubDate>
+            <content:encoded><![CDATA[<p><a href="/article/java-or-oglavlenie">Java | Оглавление</a></p>
+<hr />
+<ul>
+<li>kafka</li>
+<li>elasticsearch</li>
+<li>redis</li>
+<li>spring</li>
+<li>hadoop</li>
+<li>spark</li>
+<li>kudu</li>
+<li>spring security</li>
+<li>миграции</li>
+</ul>
+<hr />
+<p>Скачено:</p>
+<ul>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-42" checked="checked" /><label id="cb-label-md-checkbox-42" for="md-checkbox-42" class="checkbox-label-checked"><a title="https://coursehunter.net/course/java-dlya-veb-servisov-amazon-aws" href="https://coursehunter.net/course/java-dlya-veb-servisov-amazon-aws">https://coursehunter.net/course/java-dlya-veb-servisov-amazon-aws</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-43" checked="checked" /><label id="cb-label-md-checkbox-43" for="md-checkbox-43" class="checkbox-label-checked"><a title="https://coursehunter.net/course/totalnaya-bezopasnost-so-spring-security" href="https://coursehunter.net/course/totalnaya-bezopasnost-so-spring-security">https://coursehunter.net/course/totalnaya-bezopasnost-so-spring-security</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-44" /><label id="cb-label-md-checkbox-44" for="md-checkbox-44" class="checkbox-label-unchecked"><a title="https://coursehunter.net/course/jvm-osnovy-akka-s-scala" href="https://coursehunter.net/course/jvm-osnovy-akka-s-scala">https://coursehunter.net/course/jvm-osnovy-akka-s-scala</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-45" /><label id="cb-label-md-checkbox-45" for="md-checkbox-45" class="checkbox-label-unchecked"><a title="https://coursehunter.net/course/mnogopotochnost-java-parallelizm-i-optimizaciya-proizvoditelnosti" href="https://coursehunter.net/course/mnogopotochnost-java-parallelizm-i-optimizaciya-proizvoditelnosti">https://coursehunter.net/course/mnogopotochnost-java-parallelizm-i-optimizaciya-proizvoditelnosti</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-46" /><label id="cb-label-md-checkbox-46" for="md-checkbox-46" class="checkbox-label-unchecked"><a title="https://coursehunter.net/course/angular-java-spring-hibernate" href="https://coursehunter.net/course/angular-java-spring-hibernate">https://coursehunter.net/course/angular-java-spring-hibernate</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-47" /><label id="cb-label-md-checkbox-47" for="md-checkbox-47" class="checkbox-label-unchecked"><a title="https://coursehunter.net/course/mikroservisy-s-spring-cloud-prakticheskoe-rukovodstvo" href="https://coursehunter.net/course/mikroservisy-s-spring-cloud-prakticheskoe-rukovodstvo">https://coursehunter.net/course/mikroservisy-s-spring-cloud-prakticheskoe-rukovodstvo</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-48" checked="checked" /><label id="cb-label-md-checkbox-48" for="md-checkbox-48" class="checkbox-label-checked"><a title="https://coursehunter.net/course/docker-dlya-razrabotchikov-java" href="https://coursehunter.net/course/docker-dlya-razrabotchikov-java">https://coursehunter.net/course/docker-dlya-razrabotchikov-java</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-49" /><label id="cb-label-md-checkbox-49" for="md-checkbox-49" class="checkbox-label-unchecked"><a title="https://coursehunter.net/course/spring-framework-devops-na-aws" href="https://coursehunter.net/course/spring-framework-devops-na-aws">https://coursehunter.net/course/spring-framework-devops-na-aws</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-50" /><label id="cb-label-md-checkbox-50" for="md-checkbox-50" class="checkbox-label-unchecked"><a title="https://coursehunter.net/course/java-non-blocking-io-c-java-nio-i-shablonami-proektirovaniya" href="https://coursehunter.net/course/java-non-blocking-io-c-java-nio-i-shablonami-proektirovaniya">https://coursehunter.net/course/java-non-blocking-io-c-java-nio-i-shablonami-proektirovaniya</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-51" /><label id="cb-label-md-checkbox-51" for="md-checkbox-51" class="checkbox-label-unchecked"><a title="https://coursehunter.net/course/mnogopotochnost-java-parallelizm-i-parallelnoe-programmirovanie" href="https://coursehunter.net/course/mnogopotochnost-java-parallelizm-i-parallelnoe-programmirovanie">https://coursehunter.net/course/mnogopotochnost-java-parallelizm-i-parallelnoe-programmirovanie</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-52" /><label id="cb-label-md-checkbox-52" for="md-checkbox-52" class="checkbox-label-unchecked"><a title="https://coursehunter.net/course/transmogrifier-java-nio-i-non-blocking-io" href="https://coursehunter.net/course/transmogrifier-java-nio-i-non-blocking-io">https://coursehunter.net/course/transmogrifier-java-nio-i-non-blocking-io</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-53" /><label id="cb-label-md-checkbox-53" for="md-checkbox-53" class="checkbox-label-unchecked"><a title="https://coursehunter.net/course/mikroservisy-v-spring-pod-kapotom-c-ispolzovaniem-domain-driven-design" href="https://coursehunter.net/course/mikroservisy-v-spring-pod-kapotom-c-ispolzovaniem-domain-driven-design">https://coursehunter.net/course/mikroservisy-v-spring-pod-kapotom-c-ispolzovaniem-domain-driven-design</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-54" checked="checked" /><label id="cb-label-md-checkbox-54" for="md-checkbox-54" class="checkbox-label-checked"><a title="https://coursehunter.net/course/spring-integration-kurs-dlya-razrabotchikov" href="https://coursehunter.net/course/spring-integration-kurs-dlya-razrabotchikov">https://coursehunter.net/course/spring-integration-kurs-dlya-razrabotchikov</a></label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-55" /><label id="cb-label-md-checkbox-55" for="md-checkbox-55" class="checkbox-label-unchecked"><a title="https://coursehunter.net/course/kniga-reaktivnyy-spring" href="https://coursehunter.net/course/kniga-reaktivnyy-spring">https://coursehunter.net/course/kniga-reaktivnyy-spring</a></label></div><p></p>
+</li>
+</ul>
+]]></content:encoded>
+        </item>
+    </channel>
+</rss>
